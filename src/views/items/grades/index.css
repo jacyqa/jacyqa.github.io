@@ -1,0 +1,13 @@
+.info {
+  display: flex;
+  flex-direction: column;
+}
+.info .item {
+  margin: 10px;
+}
+.head {
+  display: flex;
+}
+.avgChart {
+  width: 100%;
+}
