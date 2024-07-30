@@ -11,16 +11,6 @@
             :percentage="parseInt(progress.progress * 100)"
           />
         </template>
-        <template #extra>
-          <el-button
-            type="primary"
-            @click="
-              showResult = false;
-              progress.progress = 0;
-            "
-            >Back</el-button
-          >
-        </template>
       </el-result>
     </div>
   </el-dialog>
