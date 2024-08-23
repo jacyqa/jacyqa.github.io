@@ -3,7 +3,10 @@
   <h1 class="tlt">登分器</h1>
   <el-dialog v-model="showResult">
     <div class="result">
-      <el-result title="Please wait" sub-title="We're preparing your result">
+      <el-result
+        title="Please wait"
+        sub-title="We're preparing your result.But you can close this dialog."
+      >
         <template #icon>
           <el-progress
             type="circle"
@@ -69,7 +72,7 @@
 
 <script lang="ts">
 //@ts-nocheck
-import { ElProgress } from "element-plus";
+import { ElProgress, ElDialog } from "element-plus";
 import fakeProgress from "fake-progress";
 import _ from "lodash";
 import { data as classData } from "@/components/data";
@@ -91,6 +94,7 @@ export default {
         timeConstant: 5000, //timeConstant相当于分母，分母越大则加的越少
       }),
     );
+    const isHasBeenClose = ref(false);
 
     function test() {
       // progress.start();
@@ -143,6 +147,7 @@ export default {
           stautsOfProgrss.value = "success";
         }, 500);
         teamGrades.value = computedTeamGrade(data.map((item) => item.grade));
+
         exportResult();
       }, 3000);
     }
@@ -214,10 +219,8 @@ export default {
       const newArray: finalArray[] = [];
       let team = 1;
       let avgIndex = 0;
-
       data.forEach((item, index) => {
         newArray.push(item);
-
         if ((index + 1) % 7 === 0) {
           newArray.push({
             num: `均分`,
@@ -234,6 +237,7 @@ export default {
       grade: number | string;
     }
     type finalArray = studentAndTeamInfo;
+
     function exportFile(src: finalArray[]) {
       /* generate worksheet from state */
       const ws = utils.json_to_sheet(src);

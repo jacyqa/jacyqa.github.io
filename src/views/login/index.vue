@@ -3,7 +3,10 @@
     <div class="container abb">
       <div class="forms-container">
         <div class="signin-signup">
-          <form action="#" class="sign-in-form">
+          <el-button v-if="!showSignInForm" @click="logout" type="primary"
+            >退登</el-button
+          >
+          <form v-if="showSignInForm" action="#" class="sign-in-form">
             <h2 class="title">登录</h2>
 
             <el-input
@@ -25,21 +28,6 @@
             <el-button @click="login" type="primary" class="btn solid"
               >登录</el-button
             >
-            <p class="social-text">通过其他方式</p>
-            <div class="social-media">
-              <a href="#" class="social-icon">
-                <i class="fab fa-qq"></i>
-              </a>
-              <a href="#" class="social-icon">
-                <i class="fab fa-weixin"></i>
-              </a>
-              <a href="#" class="social-icon">
-                <i class="fab fa-weibo"></i>
-              </a>
-              <a href="#" class="social-icon">
-                <i class="fab fa-alipay"></i>
-              </a>
-            </div>
           </form>
           <form action="#" class="sign-up-form">
             <h2 class="title">注册?</h2>
@@ -51,21 +39,6 @@
             <el-input type="password" style="width: 240px" placeholder="密码" />
 
             <el-button type="primary" class="btn">立即注册</el-button>
-            <p class="social-text">通过其他方式</p>
-            <div class="social-media">
-              <a href="#" class="social-icon">
-                <i class="fab fa-qq"></i>
-              </a>
-              <a href="#" class="social-icon">
-                <i class="fab fa-weixin"></i>
-              </a>
-              <a href="#" class="social-icon">
-                <i class="fab fa-weibo"></i>
-              </a>
-              <a href="#" class="social-icon">
-                <i class="fab fa-alipay"></i>
-              </a>
-            </div>
           </form>
         </div>
       </div>
@@ -95,14 +68,15 @@
 <!-- <script src="https://kit.fontawesome.com/64d58efce2.js" crossorigin="anonymous"></script> -->
 <script lang="ts" crossorigin="anonymous">
 //@ts-nocheck
-import "https://kit.fontawesome.com/64d58efce2.js";
 import { useUserStore } from "@/stores/user";
 import router from "@/router/index";
 import { getQueryString } from "@/function/getQueryString";
-import { setCookie } from "@/function/setCookie";
 
 export default {
   setup() {
+    const userStore = useUserStore();
+
+    const showSignInForm = computed(() => !userStore.isLoggedIn);
     const password = ref("");
     const username = ref("");
 
@@ -124,10 +98,9 @@ export default {
       if (username.value === "admin" && password.value === "admin") {
         userStore.login();
         const redirect = router.resolve({
-          name: Object.freeze(getQueryString("redirect") || "index"),
+          name: Object.freeze(getQueryString("redirect")) || "index",
         });
         router.push(redirect.fullPath);
-        setCookie("passed", "true");
         // router.push($route.query.redirect);
       } else {
         confirm("用户名或密码错误");
@@ -137,7 +110,13 @@ export default {
       }
     }
 
+    function logout() {
+      const userStore = useUserStore();
+      userStore.logout();
+    }
     return {
+      logout,
+      showSignInForm,
       login,
       password,
       username,

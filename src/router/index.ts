@@ -34,11 +34,9 @@ const notFoundRouter = {
   meta: {},
   component: () => import("@/views/404/index.vue"),
 };
-routes.push(notFoundRouter);
-console.log(routes);
 const router = createRouter({
   history: createWebHistory(),
-  routes,
+  routes: [...routes, notFoundRouter],
 });
 
 router.beforeEach(async (to, from) => {
@@ -47,11 +45,7 @@ router.beforeEach(async (to, from) => {
   // 检查目标路由是否需要认证
   if (to.meta.isBuilding) {
     router.push(`/404?redirect=${String(to.name)}`);
-  } else if (
-    to.meta.requiresAuth &&
-    !userStore.isLoggedIn &&
-    !document.cookie.includes("passed")
-  ) {
+  } else if (to.meta.requiresAuth && !userStore.isLoggedIn) {
     // 用户未登录且尝试访问需要认证的页面，重定向到登录页
     router.push(`/login?redirect=${String(to.name)}`);
   }

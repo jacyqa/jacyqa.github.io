@@ -13,7 +13,6 @@
     "isolatedModules": true,
     "baseUrl": ".",
     "allowSyntheticDefaultImports": true,
-
     "typeRoots": ["node_modules/@types"],
     "paths": {
       "*": ["node_modules/*", "src/types/*"],

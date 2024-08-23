@@ -8,10 +8,13 @@ import zhCn from "element-plus/es/locale/lang/zh-cn";
 import "./js/autoLoad";
 import App from "./App.vue";
 import router from "./router";
+import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
 
 const app = createApp(App);
+const pinia = createPinia();
 
-app.use(createPinia());
+app.use(pinia);
+pinia.use(piniaPluginPersistedstate);
 app.use(ElementPlus, {
   locale: zhCn,
 });
