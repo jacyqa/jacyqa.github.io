@@ -204,11 +204,7 @@ export default {
      * 导出结果并下载
      */
     function exportResult() {
-      data
-        .map((item) => item.grade)
-        .forEach((number, index) => {
-          data[index].grade = number;
-        });
+      data.forEach((item, index) => { item.grade = item.grade; });
       addTeamGrade();
     }
     /**
