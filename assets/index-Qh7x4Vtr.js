@@ -1,1 +1,0 @@
-import{_ as e}from"./index-Beec2egL.js";import{p as s,q as a}from"./vue-BzY4qGYH.js";import"./pinia-DYdqz1aY.js";import"./element-plus-CSrT7HCD.js";const t=e({},[["render",function(e,t){return s(),a("h1",null,"This is a aboutPage")}],["__scopeId","data-v-08a031e8"]]);export{t as default};

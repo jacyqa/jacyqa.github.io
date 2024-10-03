@@ -1,1 +1,0 @@
-import{_ as o}from"./index-Beec2egL.js";import{p as t,q as s,F as n,t as e}from"./vue-BzY4qGYH.js";import"./pinia-DYdqz1aY.js";import"./element-plus-CSrT7HCD.js";const r={},a=e("p",null,"E-main:gytfu39@outlook.com",-1),l=e("p",null,"wechat: dyb_vscode",-1);const p=o(r,[["render",function(o,e){return t(),s(n,null,[a,l],64)}]]);export{p as default};
