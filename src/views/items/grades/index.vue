@@ -3,17 +3,7 @@
   <h1 class="tlt">登分器</h1>
   <el-dialog v-model="showResult">
     <div class="result">
-      <el-result
-        title="Please wait"
-        sub-title="We're preparing your result.But you can close this dialog."
-      >
-        <template #icon>
-          <el-progress
-            type="circle"
-            :status="stautsOfProgrss"
-            :percentage="parseInt(progress.progress * 100)"
-          />
-        </template>
+      <el-result title="Please wait" sub-title="We're preparing your result.But you can close this dialog.">
       </el-result>
     </div>
   </el-dialog>
@@ -24,37 +14,19 @@
           <el-button @click="handleInput">Next</el-button>
           <el-button @click="handleInputToExpert">导出</el-button>
           <el-button @click="test">test</el-button>
-          <el-checkbox
-            v-model="isFullPerson"
-            @click="CheckToCalculateGroupAverages"
-            label="是否去除未考式人员"
-          />
+          <el-checkbox v-model="isFullPerson" @click="CheckToCalculateGroupAverages" label="是否去除未考式人员" />
         </div>
         <div class="info">
-          <el-input-number
-            :min="1"
-            :max="63"
-            class="item"
-            v-model="inputNumber"
-            size="large"
-            placeholder="学号"
-            @change="fetchinputNumber"
-          />
-          <h2 class="item">当前学生：{{ showName }}</h2>
-          <el-input-number
-            :min="0"
-            class="item"
-            v-model="grade"
-            size="large"
-            placeholder="分数"
-            @keyup.enter="handleInput"
-          />
+          <el-input-number :min="1" :max="63" class="item" v-model="inputNumber" size="large" placeholder="学号" />
+          <h2 class="item">当前学生：{{ findStudentByNumber(inputNumber) }}</h2>
+          <el-input-number :min="0" class="item" v-model="grade" size="large" placeholder="分数"
+            @keyup.enter="handleInput" />
         </div>
       </div>
       <div class="avgChart">
-        <el-table :data="teamGrades" border>
-          <el-table-column prop="team" label="组别"></el-table-column>
-          <el-table-column prop="avgGrade" label="平均分"></el-table-column>
+        <el-table :data="group" border>
+          <el-table-column prop="id" label="组别"></el-table-column>
+          <el-table-column prop="averageGrade" label="平均分"></el-table-column>
         </el-table>
       </div>
     </div>
@@ -72,59 +44,42 @@
 
 <script lang="ts">
 //@ts-nocheck
-import { ElProgress, ElDialog } from "element-plus";
-import fakeProgress from "fake-progress";
+import { ElDialog } from "element-plus";
 import _ from "lodash";
-import { data as classData } from "@/components/data";
-import { utils, writeFileXLSX } from "xlsx";
+import { members as classData, groups, members } from "@/components/data";
+import * as XLSX from "xlsx";
 
 export default {
   setup() {
-    const stautsOfProgrss = ref("");
+    const group = reactive(groups)
     const showResult = ref(false);
     const data = reactive(classData); //原数组
-    const index = ref(0); //原数组索引
-    const inputNumber = ref(undefined); //学号（输入值）
-    const showName = ref(""); //姓名
+    const inputNumber = ref(null); //学号（输入值）
     const grade = ref(undefined); //分数（输入值）
-    const teamGrades = ref<any>([]); //每组平均分
     const isFullPerson = ref(false); //是否开启‘去除未考式人员’
-    const progress = reactive(
-      new fakeProgress({
-        timeConstant: 5000, //timeConstant相当于分母，分母越大则加的越少
-      }),
-    );
     const isHasBeenClose = ref(false);
 
     function test() {
-      // progress.start();
-      // progress.end()
-    }
-    /**
-     * 通过将学号减一的方式获取正确数组的索引
-     */
-    function fetchinputNumber() {
-      index.value = (inputNumber.value || 0) - 1;
-      fatchname(index.value);
+      exportToExcel(group, "6.xlsx")
     }
     /**
      * 获取学号对应的姓名，并显示
      */
 
-    function fatchname(index: number) {
-      showName.value = data[index].name;
-      console.dir(data.map((item) => item.grade));
+    function findStudentByNumber(index: number = 0) {
+      const student = (data.find(member => member.num === index) || { name: "（键入正确学号以检索学生）" }).name;
+
+      return student;
     }
     /**
      * 将输入的分数添加到原分数数组中
      */
     function handleInput() {
       if (grade.value && grade.value >= 0) {
-        data[index.value].grade = grade.value;
+        data.find(member => member.num === inputNumber.value).grade = grade.value;
         grade.value = undefined;
         inputNumber.value = undefined;
-        showName.value = "";
-        teamGrades.value = computedTeamGrade(data.map((item) => item.grade));
+        computedTeamGrade();
       } else {
         alert("成绩或学号输入有误");
       }
@@ -137,18 +92,10 @@ export default {
     function handleInputToExpert() {
       grade.value = undefined;
       inputNumber.value = undefined;
-      showName.value = "";
-      stautsOfProgrss.value = "";
       showResult.value = true;
-      progress.start();
       setTimeout(() => {
-        progress.end();
-        setTimeout(() => {
-          stautsOfProgrss.value = "success";
-        }, 500);
-        teamGrades.value = computedTeamGrade(data.map((item) => item.grade));
-
-        exportResult();
+        exportToExcel()
+        showResult.value = false;
       }, 3000);
     }
     /**
@@ -157,111 +104,61 @@ export default {
      * @param {Array} scores 原始成绩数组。
      * @returns {Array} 返回一个包含每组成绩平均分的数组。
      */
-    const computedTeamGrade = (scores: Array<number>): Array<number> => {
-      let a = 1;
-      const chunkArray = _.chunk(scores, 7);
-      if (!isFullPerson.value) {
-        const avgScores = chunkArray.map((chunk: Array<number>) => {
-          const sum = _.sum(chunk);
-          return sum / chunk.length;
-        });
-        console.log(`output->`, avgScores);
-        //@ts-ignore
-        return avgScores.map((item: number) => {
-          return {
-            team: `第${a++}组`,
-            avgGrade: item,
-          };
-        });
-      } else {
-        const avgScores = chunkArray.map((chunk: Array<number>) => {
-          const sum = _.sum(chunk);
-          return sum / _.compact(chunk).length;
-        });
-        const shakedArray = _.map(avgScores, (item: number) =>
-          _.toInteger(item),
-        );
-        console.log(`output->`, shakedArray);
-        //@ts-ignore
-        return shakedArray.map((item: number) => {
-          return {
-            team: `第${a++}组`,
-            avgGrade: item,
-          };
-        });
-      }
-    };
+    function computedTeamGrade(): void {
+      // 遍历每个组，并计算均分，然后添加到组对象上
+      group.forEach(group => {
+        const totalGrade = group.members.reduce((acc, member) => acc + member.grade, 0);
+        const averageGrade = group.members.length > 0 ? totalGrade / group.members.length : 0;
+        // 在组对象上添加一个新的属性来存储均分
+        group.averageGrade = averageGrade;
+      });
+    }
 
     function CheckToCalculateGroupAverages() {
-      setTimeout(() => {
-        teamGrades.value = computedTeamGrade(data.map((item) => item.grade));
-      }, 0);
-      console.log(`output->`, teamGrades.value);
-    }
 
-    /**
-     * 完结使用
-     * 导出结果并下载
-     */
-    function exportResult() {
-      data.forEach((item, index) => { item.grade = item.grade; });
-      addTeamGrade();
     }
-    /**
-     * 将小组平均分合并入成绩数组
-     */
-
-    function addTeamGrade() {
-      const newArray: finalArray[] = [];
-      let team = 1;
-      let avgIndex = 0;
-      data.forEach((item, index) => {
-        newArray.push(item);
-        if ((index + 1) % 7 === 0) {
-          newArray.push({
-            num: `均分`,
-            name: `第${team++}组`,
-            grade: `平均分${teamGrades.value[avgIndex++]["avgGrade"].toFixed(2)}`,
-          });
-        }
+    const flattenedData = group.reduce((acc, group) => {
+      group.members.forEach(member => {
+        acc.push({
+          'Group Name': group.name,
+          'Member Name': member.name,
+          'Member Grade': member.grade,
+          'Average Grade': group.averageGrade
+        });
       });
-      exportFile(newArray);
-    }
-    interface studentAndTeamInfo {
-      num: number | string;
-      name: string;
-      grade: number | string;
-    }
-    type finalArray = studentAndTeamInfo;
+      return acc;
+    }, []);
+    function exportToExcel(data = group, fileName = "result.xlsx") {
+      // 创建一个新的工作簿
+      const wb = XLSX.utils.book_new();
 
-    function exportFile(src: finalArray[]) {
-      /* generate worksheet from state */
-      const ws = utils.json_to_sheet(src);
-      /* create workbook and append worksheet */
-      const wb = utils.book_new();
-      utils.book_append_sheet(wb, ws, "Data");
-      /* export to XLSX */
-      writeFileXLSX(wb, "result.xlsx");
+      // 将数据转换为工作表
+      const ws = XLSX.utils.json_to_sheet(data);
+
+      // 将工作表添加到工作簿中
+      XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+
+      // 将工作簿写入文件
+      XLSX.writeFile(wb, fileName);
     }
+
+
+
+
 
     // 返回需要暴露给模板的数据和方法
     return {
-      stautsOfProgrss,
-      progress,
+      group,
+      findStudentByNumber,
       showResult,
       test,
-      teamGrades,
       data,
       isFullPerson,
       inputNumber,
-      showName,
       grade,
-      index,
-      fetchinputNumber,
       handleInput,
       handleInputToExpert,
       CheckToCalculateGroupAverages,
-      exportResult,
     };
   },
 };
