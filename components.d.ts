@@ -11,7 +11,7 @@ declare module 'vue' {
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
     ElDialog: typeof import('element-plus/es')['ElDialog']
     ElInputNumber: typeof import('element-plus/es')['ElInputNumber']
-    ElProgress: typeof import('element-plus/es')['ElProgress']
+    ElProgress: (typeof import("element-plus/es"))["ElProgress"]
     ElResult: typeof import('element-plus/es')['ElResult']
     ElTable: typeof import('element-plus/es')['ElTable']
     ElTableColumn: typeof import('element-plus/es')['ElTableColumn']
