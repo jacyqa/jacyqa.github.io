@@ -14,13 +14,16 @@
           <el-button @click="handleInput">Next</el-button>
           <el-button @click="handleInputToExpert">导出</el-button>
           <el-button @click="test">test</el-button>
-          <el-checkbox v-model="isFullPerson" @click="CheckToCalculateGroupAverages" label="是否去除未考式人员" />
+          <el-input-number v-model="passGrade" placeholder="及格分数" size="small" />
+          <el-checkbox v-model="isFullPerson" label="是否去除未考式人员" />
         </div>
         <div class="info">
           <el-input-number :min="1" :max="63" class="item" v-model="inputNumber" size="large" placeholder="学号" />
           <h2 class="item">当前学生：{{ findStudentByNumber(inputNumber) }}</h2>
           <el-input-number :min="0" class="item" v-model="grade" size="large" placeholder="分数"
             @keyup.enter="handleInput" />
+          <h3 class="item">男生平均分数：{{ computedSexGrade().maleAverage }}</h3>
+          <h3 class="item">女生平均分数：{{ computedSexGrade().femaleAverage }}</h3>
         </div>
       </div>
       <div class="avgChart">
@@ -28,10 +31,6 @@
           <el-table-column prop="id" label="组别"></el-table-column>
           <el-table-column prop="averageGrade" label="平均分"></el-table-column>
         </el-table>
-        <!-- <el-table :data="" border>
-          <el-table-column prop="id" label="组别"></el-table-column>
-          <el-table-column prop="averageGrade" label="平均分"></el-table-column>
-        </el-table> -->
       </div>
     </div>
     <div class="chart">
@@ -57,8 +56,9 @@ export default {
     const showResult = ref(false);
     const data = reactive(classData); //原数组
     const inputNumber = ref<undefined | number>(undefined); //学号（输入值）
-    const grade = ref(undefined); //分数（输入值）
+    const grade = ref<undefined | number>(undefined); //分数（输入值）
     const isFullPerson = ref(false); //是否开启‘去除未考式人员’
+    const passGrade = ref<undefined | number>(undefined); //通过的分数
 
     function test() {
       exportToExcel();
@@ -112,15 +112,27 @@ export default {
     function computedTeamGrade(): void {
       // 遍历每个组，并计算均分，然后添加到组对象上
       group.forEach((group) => {
-        const totalGrade = group.members.reduce(
-          (acc, member) => acc + member.grade,
-          0,
-        );
-        // 在组对象上添加一个新的属性来存储均分
-        group.averageGrade =
-          group.members.length > 0 ? totalGrade / group.members.length : 0;
+        let totalGrade = 0;
+        let count = 0; // 用于记录有效成绩（非零）的成员数量
+
+        group.members.forEach((member) => {
+          if (isFullPerson.value && member.grade === 0) {
+            // 如果isCheck为true且成员成绩为零，则不计算该成员的成绩
+            return;
+          }
+          totalGrade += member.grade;
+          count++; // 有效成绩数量加一
+        });
+
+        // 在组对象上添加一个新的属性来存储均分，只有当有有效成绩时才计算均分
+        group.averageGrade = count > 0 ? totalGrade / count : 0;
       });
-    }
+    };
+    // 使用watch来监听isCheck的变化
+    watch(isFullPerson, (newValue, oldValue) => {
+      // 当isCheck的值变化时，调用computedTeamGrade函数
+      computedTeamGrade();
+    }, { immediate: true });
     //TODO:
     function computedSexGrade() {
       let maleGrades = 0; // 男生分数总和
@@ -128,8 +140,9 @@ export default {
       let maleCount = 0; // 男生数量
       let femaleCount = 0; // 女生数量
       data.forEach((member) => {
-        // 遍历组中的每个成员
-        if (member.sex === "男") {
+        if (isFullPerson.value && member.grade === 0) {
+          return;
+        } else if (member.sex === "男") {
           maleGrades += member.grade; // 累加男生分数
           maleCount++; // 男生数量加1
         } else if (member.sex === "女") {
@@ -147,19 +160,6 @@ export default {
       };
     }
 
-    function CheckToCalculateGroupAverages() { }
-    //TODO:
-    // const flattenedData = group.reduce((acc, group) => {
-    //   group.members.forEach((member) => {
-    //     acc.push({
-    //       "Group Name": group.name,
-    //       "Member Name": member.name,
-    //       "Member Grade": member.grade,
-    //       "Average Grade": group.averageGrade,
-    //     });
-    //   });
-    //   return acc;
-    // }, []);
 
     function exportToExcel() {
       // 导出为excel文件
@@ -209,28 +209,75 @@ export default {
           width: 20,
           style: { alignment: { vertical: "middle", horizontal: "center" } },
         },
+        {
+          header: "学生",
+          key: "allStudents",
+          width: 20,
+          style: { alignment: { vertical: "middle", horizontal: "center" } },
+        },
+        {
+          header: "成绩",
+          key: "grade",
+          width: 10,
+          style: { alignment: { vertical: "middle", horizontal: "center" } },
+        }
       ];
       //男女平均分计算
-        const { maleAverage, femaleAverage } = computedSexGrade();
-        worksheet.addRow({
-          maleAverage,
-          femaleAverage,
-        });
+      const { maleAverage, femaleAverage } = computedSexGrade();
+      worksheet.addRow({
+        maleAverage,
+        femaleAverage,
+      });
+
+      let newAllstudents = data.toSorted((a, b) => b.grade - a.grade);
 
       // 先对group数组按照averageGrade从高到低进行排序
       //@ts-ignore
       let newGroup = group.toSorted((a, b) => b.averageGrade - a.averageGrade);
+
+
+      let writeRow = 2; // 当前写入的行号
+      newAllstudents.forEach((member, index) => {
+        let memberNameCell = worksheet.getCell("H" + writeRow);
+        memberNameCell.value = member.name; // 设置组员名字
+        let memberGradeCell = worksheet.getCell("I" + writeRow);
+        memberGradeCell.value = member.grade; // 设置组员成绩
+        if (passGrade.value && member.grade < passGrade.value) {
+            memberGradeCell.style = {
+              font: { color: { argb: "FF0000" } },// ARGB颜色代码，FF0000代表红色
+              alignment: { vertical: "middle", horizontal: "center" }
+            };
+          };
+          if (isFullPerson.value && member.grade === 0) {
+            memberGradeCell.value = '未算入';
+            memberGradeCell.style = {
+              alignment: { vertical: "middle", horizontal: "center" },
+            }
+          };
+        writeRow++;
+      });
       let currentRow = 2; // 当前写入的行号
       newGroup.forEach((groupData, groupIndex) => {
         let startRow = currentRow; // 记录当前组的起始行号
-
         // 为每个组员添加一行
         groupData.members.forEach((member, memberIndex) => {
           let memberCell = worksheet.getCell("C" + currentRow);
           memberCell.value = member.name; // 设置组员名字
           let memberGradeCell = worksheet.getCell("D" + currentRow);
-          memberGradeCell.value = member.grade; // 设置组员名字
-
+          memberGradeCell.value = member.grade; // 设置组员成绩
+          // 检查分数是否低于60，如果是，则设置字体颜色为红色
+          if (passGrade.value && member.grade < passGrade.value) {
+            memberGradeCell.style = {
+              font: { color: { argb: "FF0000" } },// ARGB颜色代码，FF0000代表红色
+              alignment: { vertical: "middle", horizontal: "center" }
+            };
+          };
+          if (isFullPerson.value && member.grade === 0) {
+            memberGradeCell.value = '未算入';
+            memberGradeCell.style = {
+              alignment: { vertical: "middle", horizontal: "center" },
+            }
+          }
           // 准备下一行的数据（如果有的话）
           currentRow++;
         });
@@ -258,6 +305,7 @@ export default {
 
     // 返回需要暴露给模板的数据和方法
     return {
+      computedSexGrade,
       group,
       findStudentByNumber,
       showResult,
@@ -268,7 +316,7 @@ export default {
       grade,
       handleInput,
       handleInputToExpert,
-      CheckToCalculateGroupAverages,
+      passGrade
     };
   },
 };
