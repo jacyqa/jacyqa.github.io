@@ -13,7 +13,6 @@
     "init": "tsc --init"
   },
   "dependencies": {
-    "@types/lodash": "^4.17.7",
     "@xmldom/xmldom": "^0.8.10",
     "element-plus": "^2.7.2",
     "exceljs": "^4.4.0",
@@ -35,6 +34,7 @@
     "vue-router": "^4.3.3"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.7",
     "@tsconfig/node20": "^20.1.4",
     "@types/file-saver": "^2.0.7",
     "@types/node": "^20.14.5",

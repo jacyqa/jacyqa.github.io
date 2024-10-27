@@ -14,7 +14,7 @@ export default defineConfig({
         manualChunks: {
           vue: ["vue", "vue-router"],
           "element-plus": ["element-plus"],
-          xlsx: ["xlsx"],
+          exceljs: ["exceljs"],
           gsap: ["gsap"],
           pinia: ["pinia"],
           lodash: ["lodash"],

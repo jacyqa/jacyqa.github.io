@@ -3,7 +3,10 @@
   <h1 class="tlt">登分器</h1>
   <el-dialog v-model="showResult">
     <div class="result">
-      <el-result title="Please wait" sub-title="We're preparing your result.But you can close this dialog.">
+      <el-result
+        title="Please wait"
+        sub-title="We're preparing your result.But you can close this dialog."
+      >
       </el-result>
     </div>
   </el-dialog>
@@ -14,16 +17,37 @@
           <el-button @click="handleInput">Next</el-button>
           <el-button @click="handleInputToExpert">导出</el-button>
           <el-button @click="test">test</el-button>
-          <el-input-number v-model="passGrade" placeholder="及格分数" size="small" />
+          <el-input-number
+            v-model="passGrade"
+            placeholder="及格分数"
+            size="small"
+          />
           <el-checkbox v-model="isFullPerson" label="是否去除未考式人员" />
         </div>
         <div class="info">
-          <el-input-number :min="1" :max="63" class="item" v-model="inputNumber" size="large" placeholder="学号" />
+          <el-input-number
+            :min="1"
+            :max="63"
+            class="item"
+            v-model="inputNumber"
+            size="large"
+            placeholder="学号"
+          />
           <h2 class="item">当前学生：{{ findStudentByNumber(inputNumber) }}</h2>
-          <el-input-number :min="0" class="item" v-model="grade" size="large" placeholder="分数"
-            @keyup.enter="handleInput" />
-          <h3 class="item">男生平均分数：{{ computedSexGrade().maleAverage }}</h3>
-          <h3 class="item">女生平均分数：{{ computedSexGrade().femaleAverage }}</h3>
+          <el-input-number
+            :min="0"
+            class="item"
+            v-model="grade"
+            size="large"
+            placeholder="分数"
+            @keyup.enter="handleInput"
+          />
+          <h3 class="item">
+            男生平均分数：{{ computedSexGrade().maleAverage }}
+          </h3>
+          <h3 class="item">
+            女生平均分数：{{ computedSexGrade().femaleAverage }}
+          </h3>
         </div>
       </div>
       <div class="avgChart">
@@ -127,12 +151,16 @@ export default {
         // 在组对象上添加一个新的属性来存储均分，只有当有有效成绩时才计算均分
         group.averageGrade = count > 0 ? totalGrade / count : 0;
       });
-    };
+    }
     // 使用watch来监听isCheck的变化
-    watch(isFullPerson, (newValue, oldValue) => {
-      // 当isCheck的值变化时，调用computedTeamGrade函数
-      computedTeamGrade();
-    }, { immediate: true });
+    watch(
+      isFullPerson,
+      (newValue, oldValue) => {
+        // 当isCheck的值变化时，调用computedTeamGrade函数
+        computedTeamGrade();
+      },
+      { immediate: true },
+    );
     //TODO:
     function computedSexGrade() {
       let maleGrades = 0; // 男生分数总和
@@ -159,7 +187,6 @@ export default {
         femaleAverage,
       };
     }
-
 
     function exportToExcel() {
       // 导出为excel文件
@@ -189,7 +216,6 @@ export default {
           key: "grade",
           width: 10,
           style: { alignment: { vertical: "middle", horizontal: "center" } },
-
         },
         {
           header: "均分",
@@ -220,7 +246,7 @@ export default {
           key: "grade",
           width: 10,
           style: { alignment: { vertical: "middle", horizontal: "center" } },
-        }
+        },
       ];
       //男女平均分计算
       const { maleAverage, femaleAverage } = computedSexGrade();
@@ -235,7 +261,6 @@ export default {
       //@ts-ignore
       let newGroup = group.toSorted((a, b) => b.averageGrade - a.averageGrade);
 
-
       let writeRow = 2; // 当前写入的行号
       newAllstudents.forEach((member, index) => {
         let memberNameCell = worksheet.getCell("H" + writeRow);
@@ -243,17 +268,17 @@ export default {
         let memberGradeCell = worksheet.getCell("I" + writeRow);
         memberGradeCell.value = member.grade; // 设置组员成绩
         if (passGrade.value && member.grade < passGrade.value) {
-            memberGradeCell.style = {
-              font: { color: { argb: "FF0000" } },// ARGB颜色代码，FF0000代表红色
-              alignment: { vertical: "middle", horizontal: "center" }
-            };
+          memberGradeCell.style = {
+            font: { color: { argb: "FF0000" } }, // ARGB颜色代码，FF0000代表红色
+            alignment: { vertical: "middle", horizontal: "center" },
           };
-          if (isFullPerson.value && member.grade === 0) {
-            memberGradeCell.value = '未算入';
-            memberGradeCell.style = {
-              alignment: { vertical: "middle", horizontal: "center" },
-            }
+        }
+        if (isFullPerson.value && member.grade === 0) {
+          memberGradeCell.value = "未算入";
+          memberGradeCell.style = {
+            alignment: { vertical: "middle", horizontal: "center" },
           };
+        }
         writeRow++;
       });
       let currentRow = 2; // 当前写入的行号
@@ -268,15 +293,15 @@ export default {
           // 检查分数是否低于60，如果是，则设置字体颜色为红色
           if (passGrade.value && member.grade < passGrade.value) {
             memberGradeCell.style = {
-              font: { color: { argb: "FF0000" } },// ARGB颜色代码，FF0000代表红色
-              alignment: { vertical: "middle", horizontal: "center" }
+              font: { color: { argb: "FF0000" } }, // ARGB颜色代码，FF0000代表红色
+              alignment: { vertical: "middle", horizontal: "center" },
             };
-          };
+          }
           if (isFullPerson.value && member.grade === 0) {
-            memberGradeCell.value = '未算入';
+            memberGradeCell.value = "未算入";
             memberGradeCell.style = {
               alignment: { vertical: "middle", horizontal: "center" },
-            }
+            };
           }
           // 准备下一行的数据（如果有的话）
           currentRow++;
@@ -316,7 +341,7 @@ export default {
       grade,
       handleInput,
       handleInputToExpert,
-      passGrade
+      passGrade,
     };
   },
 };
