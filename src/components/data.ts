@@ -9,9 +9,10 @@ interface Member {
 
 // 定义组类型
 interface Group {
+  averageGrade?: number;
   id: ValidId;
-  name: string;
   members: Member[];
+  name: string;
 }
 
 export const groups: Group[] = [
