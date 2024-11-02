@@ -255,14 +255,14 @@ export default {
         femaleAverage,
       });
 
-      let newAllstudents = data.toSorted((a, b) => b.grade - a.grade);
+      let newAllStudents = data.toSorted((a, b) => b.grade - a.grade);
 
       // 先对group数组按照averageGrade从高到低进行排序
       //@ts-ignore
       let newGroup = group.toSorted((a, b) => b.averageGrade - a.averageGrade);
 
       let writeRow = 2; // 当前写入的行号
-      newAllstudents.forEach((member, index) => {
+      newAllStudents.forEach((member, index) => {
         let memberNameCell = worksheet.getCell("H" + writeRow);
         memberNameCell.value = member.name; // 设置组员名字
         let memberGradeCell = worksheet.getCell("I" + writeRow);

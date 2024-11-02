@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host",
+    "dev": "vite dev",
     "build": "prettier --write . && vue-tsc --build --force && vite build && node ./script/dns-pre.cjs",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
