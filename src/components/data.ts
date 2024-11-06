@@ -438,12 +438,6 @@ export const groups: Group[] = [
         sex: "男",
       },
       {
-        num: 53,
-        name: "么雨忱",
-        grade: 0,
-        sex: "男",
-      },
-      {
         num: 61,
         name: "荣鑫宇",
         grade: 0,
