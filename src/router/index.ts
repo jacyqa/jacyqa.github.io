@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import { useUserStore } from "@/stores/user";
 
 const AUTH_ROUTES = ["items-grades", "items-choose"];
-export const BUILDING_ROUTES = ["none"];
+export const BUILDING_ROUTES = ["items-classGrade"];
 //@ts-ignore
 const pageComps = import.meta.glob("../views/**/index.vue");
 const routes = Object.entries(pageComps).map(([path]) => {
