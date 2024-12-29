@@ -1,38 +1,129 @@
 <template>
-  <div>
-    <h1>随机抽人</h1>
-    <el-button @click="randomSelect">随机选择</el-button>
-    <p>随机选择的人是:{{ result.num }} {{ result.name }}</p>
+  <div class="choose-container">
+    <el-select v-model="selectedCount" placeholder="选择抽取人数" style="width: 200px;">
+      <el-option
+        v-for="count in maxSelectableCount"
+        :key="count"
+        :label="count"
+        :value="count"
+      />
+    </el-select>
+
+    <el-button type="primary" size="large" @click="startChoose" :disabled="isChoosing || !selectedCount">
+      开始抽取
+    </el-button>
+
+    <div class="names-display">
+      <div v-for="(name, index) in displayNames" :key="index" class="name-item">
+        {{ name }}
+      </div>
+    </div>
+
+    <el-dialog
+      v-model="dialogVisible"
+      title="抽取结果"
+      width="30%"
+      center
+    >
+      <template #default>
+        <div class="result-content">
+          <p>被抽中的同学是：</p>
+          <ul>
+            <li v-for="student in selectedStudents" :key="student.num">
+              {{ student.name }} (学号：{{ student.num }})
+            </li>
+          </ul>
+        </div>
+      </template>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="dialogVisible = false">关闭</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
-<script lang="ts">
-import { data } from "@/components/data-1";
+<script setup lang="ts">
+import { ref } from 'vue'
+import { members } from '@/components/data'
 
-export default {
-  setup() {
-    const people = ref(data);
-    const result = ref<{
-      num: number;
-      name: string;
-      grade: number;
-    }>({
-      num: 0,
-      name: "",
-      grade: 0,
-    });
+const displayNames = ref<string[]>([])
+const isChoosing = ref(false)
+const dialogVisible = ref(false)
+const selectedStudents = ref<any[]>([])
+const selectedCount = ref<number | null>(null)
+const maxSelectableCount = 5 // 最大可选择人数
 
-    const randomSelect = () => {
-      const randomIndex = Math.floor(Math.random() * people.value.length);
-      const selectedPerson = people.value[randomIndex];
-      result.value = selectedPerson;
-    };
+const startChoose = () => {
+  if (!selectedCount.value) return
 
-    return {
-      people,
-      result,
-      randomSelect,
-    };
-  },
-};
+  isChoosing.value = true
+  let duration = 2 // 动画持续时间
+  let interval: ReturnType<typeof setInterval>
+
+  // 初始化显示名字数组
+  displayNames.value = Array(selectedCount.value).fill('')
+
+  // 快速切换名字的动画效果
+  interval = setInterval(() => {
+    for (let i = 0; i < selectedCount.value!; i++) {
+      const randomIndex = Math.floor(Math.random() * members.length)
+      displayNames.value[i] = members[randomIndex].name
+    }
+  }, 50)
+
+  // 结束选择
+  setTimeout(() => {
+    clearInterval(interval)
+    const selectedIndices = new Set<number>()
+    while (selectedIndices.size < selectedCount.value!) {
+      selectedIndices.add(Math.floor(Math.random() * members.length))
+    }
+    selectedStudents.value = Array.from(selectedIndices).map(index => members[index])
+    displayNames.value = selectedStudents.value.map(student => student.name)
+    
+    isChoosing.value = false
+    dialogVisible.value = true
+  }, duration * 1000)
+}
 </script>
+
+<style scoped>
+.choose-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+}
+
+.names-display {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.name-item {
+  font-size: 1.5rem;
+  font-weight: bold;
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.result-content {
+  text-align: center;
+}
+
+.result-content ul {
+  list-style: none;
+  padding: 0;
+}
+
+.result-content li {
+  margin: 0.5rem 0;
+}
+</style>

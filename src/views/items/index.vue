@@ -1,8 +1,8 @@
 <template>
   <nav>
-    <RouterLink to="/items/grades"><span>Grade</span></RouterLink>
-    <RouterLink to="/items/classGrade"><span>ClassGrade</span></RouterLink>
-    <RouterLink to="/items/choose"><span>ClassChoose</span></RouterLink>
+    <RouterLink to="/items/grades"><span>Grade💯</span></RouterLink>
+    <RouterLink to="/items/classGrade"><span>ClassGrade💯</span></RouterLink>
+    <RouterLink to="/items/choose"><span>ClassChoose🤯</span></RouterLink>
   </nav>
   <router-view />
 </template>
