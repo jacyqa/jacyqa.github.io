@@ -1,6 +1,10 @@
 <template>
   <div class="choose-container">
-    <el-select v-model="selectedCount" placeholder="选择抽取人数" style="width: 200px;">
+    <el-select
+      v-model="selectedCount"
+      placeholder="选择抽取人数"
+      style="width: 200px"
+    >
       <el-option
         v-for="count in maxSelectableCount"
         :key="count"
@@ -9,7 +13,12 @@
       />
     </el-select>
 
-    <el-button type="primary" size="large" @click="startChoose" :disabled="isChoosing || !selectedCount">
+    <el-button
+      type="primary"
+      size="large"
+      @click="startChoose"
+      :disabled="isChoosing || !selectedCount"
+    >
       开始抽取
     </el-button>
 
@@ -19,18 +28,13 @@
       </div>
     </div>
 
-    <el-dialog
-      v-model="dialogVisible"
-      title="抽取结果"
-      width="30%"
-      center
-    >
+    <el-dialog v-model="dialogVisible" title="抽取结果" width="30%" center>
       <template #default>
         <div class="result-content">
           <p>被抽中的同学是：</p>
           <ul>
             <li v-for="student in selectedStudents" :key="student.num">
-              {{ student.name }} (学号：{{ student.num }})
+              {{ student.name }}
             </li>
           </ul>
         </div>
@@ -45,48 +49,50 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { members } from '@/components/data'
+import { ref } from "vue";
+import { membersfake as members } from "@/components/data";
 
-const displayNames = ref<string[]>([])
-const isChoosing = ref(false)
-const dialogVisible = ref(false)
-const selectedStudents = ref<any[]>([])
-const selectedCount = ref<number | null>(null)
-const maxSelectableCount = 5 // 最大可选择人数
+const displayNames = ref<string[]>([]);
+const isChoosing = ref(false);
+const dialogVisible = ref(false);
+const selectedStudents = ref<any[]>([]);
+const selectedCount = ref<number | null>(null);
+const maxSelectableCount = 5; // 最大可选择人数
 
 const startChoose = () => {
-  if (!selectedCount.value) return
+  if (!selectedCount.value) return;
 
-  isChoosing.value = true
-  let duration = 2 // 动画持续时间
-  let interval: ReturnType<typeof setInterval>
+  isChoosing.value = true;
+  let duration = 2; // 动画持续时间
+  let interval: ReturnType<typeof setInterval>;
 
   // 初始化显示名字数组
-  displayNames.value = Array(selectedCount.value).fill('')
+  displayNames.value = Array(selectedCount.value).fill("");
 
   // 快速切换名字的动画效果
   interval = setInterval(() => {
     for (let i = 0; i < selectedCount.value!; i++) {
-      const randomIndex = Math.floor(Math.random() * members.length)
-      displayNames.value[i] = members[randomIndex].name
+      const randomIndex = Math.floor(Math.random() * members.length);
+      displayNames.value[i] = members[randomIndex].name;
     }
-  }, 50)
+  }, 50);
 
   // 结束选择
   setTimeout(() => {
-    clearInterval(interval)
-    const selectedIndices = new Set<number>()
+    clearInterval(interval);
+    const selectedIndices = new Set<number>();
     while (selectedIndices.size < selectedCount.value!) {
-      selectedIndices.add(Math.floor(Math.random() * members.length))
+      selectedIndices.add(Math.floor(Math.random() * members.length));
     }
-    selectedStudents.value = Array.from(selectedIndices).map(index => members[index])
-    displayNames.value = selectedStudents.value.map(student => student.name)
-    
-    isChoosing.value = false
-    dialogVisible.value = true
-  }, duration * 1000)
-}
+    selectedStudents.value = Array.from(selectedIndices).map(
+      (index) => members[index],
+    );
+    displayNames.value = selectedStudents.value.map((student) => student.name);
+
+    isChoosing.value = false;
+    dialogVisible.value = true;
+  }, duration * 1000);
+};
 </script>
 
 <style scoped>

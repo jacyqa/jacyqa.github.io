@@ -458,4 +458,9 @@ function getAllMembers(groups: Group[]): Member[] {
   });
   return allMembers;
 }
+
 export const members = getAllMembers(groups);
+
+const filteredMembers = members.filter((member) => member.name !== "丁宜冰");
+console.log(`output->`, filteredMembers);
+export const membersfake = filteredMembers;
