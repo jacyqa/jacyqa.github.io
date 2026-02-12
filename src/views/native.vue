@@ -30,12 +30,12 @@
         <el-button type="primary" @click="onSubmit">Submit</el-button>
         <el-button type="danger" @click="clearData" style="margin-left: 10px;">清除数据</el-button>
     </div>
-    <el-table :data="data">
+    <el-table :data="data" style="width: auto">
         <el-table-column type="index" label="ID"></el-table-column>
         <el-table-column v-for="(value, key, index) in form" :key="key" :prop="key" :label="key"></el-table-column>
     </el-table>
     <h3>统计结果 (A/B/C/D 选择占比)</h3>
-    <el-table :data="statistics" style="margin-top: 20px;">
+    <el-table :data="statistics" style="margin-top: 20px; width: auto">
         <el-table-column prop="question" label="问题"></el-table-column>
         <el-table-column prop="aPercentage" label="A选项占比">
             <template #default="scope">
