@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "yobe文档"
-  text: "共享我作品，资源，工具的网站"
+  text: "分享作品，资源，工具的网站"
   tagline: Enjoy your time
   image:
     src: /logo.webp
