@@ -7,7 +7,7 @@ hero:
   text: "共享我作品，资源，工具的网站"
   tagline: Enjoy your time
   image:
-    src: /logo.svg
+    src: /logo.webp
     alt: yobelogo
   actions:
     - theme: brand

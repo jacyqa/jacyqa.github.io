@@ -19,7 +19,7 @@ export default defineConfig({
     search:{
       provider:"local"
     },
-    logo: "/logo.svg",
+    logo: "/logo.webp",
     // https://vitepress.dev/reference/default-theme-config
     sidebar:{
       '/src/': [
@@ -56,6 +56,8 @@ export default defineConfig({
       { text: '作品共享', link: '/src/' },
       { text: '教程', link: '/tutorial/' },
       { text: '资源分享', link: '/share/' },
+      { text: '关于我', link: '/about/' },
+      { text: '主页', link: '/' },
     ],
 
     socialLinks: [
