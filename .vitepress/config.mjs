@@ -36,7 +36,8 @@ export default defineConfig({
           text: '教程',
           items: [
             { text: '简介', link: '/tutorial/' },
-            // { text: '作品列表', link: '/src/list' },
+            { text: 'PS部分', link: '/src/ps' },
+            { text: 'AE部分', link: '/src/ae' },
           ]
         }
       ],
